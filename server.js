@@ -5,10 +5,13 @@ const axios = require("axios");
 const nodemailer = require("nodemailer");
 const app = express();
 app.use(cors({
-  origin: ["http://127.0.0.1:5500", "http://localhost:5500"]
+  origin: ["http://127.0.0.1:5500", "http://localhost:5500","https://kips-shiks-tote-collection2-production.up.railway.app/"]
 }));
 
 app.use(express.json());
+app.get("/", (req, res) => {
+  res.send("Backend is running 🚀");
+});
 
 const { CONSUMER_KEY, CONSUMER_SECRET, SHORTCODE, PASSKEY, CALLBACK_URL, EMAIL_USER, EMAIL_PASS } = process.env;
 
@@ -33,7 +36,7 @@ function sendConfirmation(email, amount){
 
 async function getToken(){
   const auth = Buffer.from(`${CONSUMER_KEY}:${CONSUMER_SECRET}`).toString("base64");
-  const res = await axios.get("https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials", { headers:{ Authorization: `Basic ${auth}` } });
+  const res = await axios.get("https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials", { headers:{ Authorization: `Basic ${auth}` } });
   return res.data.access_token;
 }
 
@@ -44,7 +47,7 @@ app.post("/pay", async (req,res)=>{
   const password = Buffer.from(SHORTCODE + PASSKEY + timestamp).toString("base64");
 
   const response = await axios.post(
-    "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
+    "https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
     {
       BusinessShortCode: SHORTCODE,
       Password: password,
